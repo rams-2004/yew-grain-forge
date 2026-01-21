@@ -1,12 +1,30 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+import { useState } from "react";
+import Header from "@/components/Header";
+import Hero from "@/components/Hero";
+import Heritage from "@/components/Heritage";
+import Inventory from "@/components/Inventory";
+import TechnicalSpecs from "@/components/TechnicalSpecs";
+import SafetyWarning from "@/components/SafetyWarning";
+import Contact from "@/components/Contact";
+import CartDrawer from "@/components/CartDrawer";
+import Footer from "@/components/Footer";
 
 const Index = () => {
+  const [cartOpen, setCartOpen] = useState(false);
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background">
-      <div className="text-center">
-        <h1 className="mb-4 text-4xl font-bold">Welcome to Your Blank App</h1>
-        <p className="text-xl text-muted-foreground">Start building your amazing project here!</p>
-      </div>
+    <div className="min-h-screen bg-background">
+      <Header onCartOpen={() => setCartOpen(true)} />
+      <main>
+        <Hero />
+        <Heritage />
+        <Inventory />
+        <TechnicalSpecs />
+        <SafetyWarning />
+        <Contact />
+      </main>
+      <Footer />
+      <CartDrawer isOpen={cartOpen} onClose={() => setCartOpen(false)} />
     </div>
   );
 };
