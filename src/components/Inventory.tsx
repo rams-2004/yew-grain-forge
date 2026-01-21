@@ -1,6 +1,8 @@
 import { useState, useRef } from "react";
 import { motion, useInView } from "framer-motion";
+import { MapPin } from "lucide-react";
 import ProductCard from "./ProductCard";
+import InquiryModal from "./InquiryModal";
 import slab1 from "@/assets/slab-1.jpg";
 import slab2 from "@/assets/slab-2.jpg";
 import turningBlanks from "@/assets/turning-blanks.jpg";
@@ -71,8 +73,21 @@ const products = [
 
 const categories = ["All", "Slabs", "Turning Blanks", "Dimensional"];
 
+interface Product {
+  id: string;
+  name: string;
+  category: string;
+  price: number;
+  image: string;
+  dimensions: string;
+  grade: string;
+  liveEdge: boolean;
+}
+
 const Inventory = () => {
   const [activeCategory, setActiveCategory] = useState("All");
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [inquiryOpen, setInquiryOpen] = useState(false);
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: "-100px" });
 
@@ -80,6 +95,11 @@ const Inventory = () => {
     activeCategory === "All"
       ? products
       : products.filter((p) => p.category === activeCategory);
+
+  const handleInquire = (product: Product) => {
+    setSelectedProduct(product);
+    setInquiryOpen(true);
+  };
 
   return (
     <section id="inventory" className="py-32 bg-secondary/30">
@@ -108,7 +128,7 @@ const Inventory = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.6, delay: 0.2 }}
-          className="flex flex-wrap justify-center gap-3 mb-16"
+          className="flex flex-wrap justify-center gap-3 mb-12"
         >
           {categories.map((category) => (
             <button
@@ -125,6 +145,21 @@ const Inventory = () => {
           ))}
         </motion.div>
 
+        {/* Shipping Notice */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={isInView ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: 0.6, delay: 0.3 }}
+          className="flex items-center justify-center gap-3 mb-16 p-4 bg-background border border-border"
+        >
+          <MapPin className="w-5 h-5 text-primary flex-shrink-0" />
+          <p className="text-sm text-muted-foreground text-center">
+            Due to the unique nature of each piece, shipping and local delivery from our 
+            <span className="text-primary font-medium"> Lake District workshop </span> 
+            are quoted individually.
+          </p>
+        </motion.div>
+
         {/* Products Grid */}
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
           {filteredProducts.map((product, index) => (
@@ -132,13 +167,20 @@ const Inventory = () => {
               key={product.id}
               initial={{ opacity: 0, y: 30 }}
               animate={isInView ? { opacity: 1, y: 0 } : {}}
-              transition={{ duration: 0.6, delay: 0.3 + index * 0.1 }}
+              transition={{ duration: 0.6, delay: 0.4 + index * 0.1 }}
             >
-              <ProductCard product={product} />
+              <ProductCard product={product} onInquire={handleInquire} />
             </motion.div>
           ))}
         </div>
       </div>
+
+      {/* Inquiry Modal */}
+      <InquiryModal
+        isOpen={inquiryOpen}
+        onClose={() => setInquiryOpen(false)}
+        product={selectedProduct}
+      />
     </section>
   );
 };

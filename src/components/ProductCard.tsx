@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { useCart } from "@/hooks/useCart";
-import { toast } from "@/hooks/use-toast";
+import { Mail } from "lucide-react";
 
 interface Product {
   id: string;
@@ -16,25 +15,11 @@ interface Product {
 
 interface ProductCardProps {
   product: Product;
+  onInquire: (product: Product) => void;
 }
 
-const ProductCard = ({ product }: ProductCardProps) => {
+const ProductCard = ({ product, onInquire }: ProductCardProps) => {
   const [isHovered, setIsHovered] = useState(false);
-  const { addItem } = useCart();
-
-  const handleAddToCart = () => {
-    addItem({
-      id: product.id,
-      name: product.name,
-      price: product.price,
-      image: product.image,
-      category: product.category,
-    });
-    toast({
-      title: "Added to cart",
-      description: `${product.name} has been added to your cart.`,
-    });
-  };
 
   return (
     <div
@@ -71,10 +56,11 @@ const ProductCard = ({ product }: ProductCardProps) => {
             {product.dimensions}
           </span>
           <button
-            onClick={handleAddToCart}
-            className="label-uppercase px-6 py-3 bg-primary text-primary-foreground hover:bg-amber-dark transition-colors duration-300"
+            onClick={() => onInquire(product)}
+            className="label-uppercase px-6 py-3 bg-primary text-primary-foreground hover:bg-amber-dark transition-colors duration-300 flex items-center gap-2"
           >
-            Add to Cart
+            <Mail className="w-4 h-4" />
+            Inquire via Email
           </button>
         </motion.div>
       </div>
