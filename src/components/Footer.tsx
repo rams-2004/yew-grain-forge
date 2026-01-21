@@ -8,11 +8,11 @@ const Footer = () => {
               Yew<span className="text-primary">&</span>Grain
             </span>
             <p className="body-refined text-sm text-cream/50 mt-2">
-              Rare English Yew, sustainably salvaged
+              Premium English Yew from the Lake District, Cumbria
             </p>
           </div>
           
-          <div className="flex items-center gap-8">
+          <nav aria-label="Footer navigation" className="flex items-center gap-8">
             <a
               href="#heritage"
               className="label-uppercase text-xs text-cream/60 hover:text-cream transition-colors duration-300"
@@ -31,12 +31,12 @@ const Footer = () => {
             >
               Contact
             </a>
-          </div>
+          </nav>
         </div>
         
         <div className="mt-8 pt-8 border-t border-cream/10 text-center">
           <p className="text-xs text-cream/40">
-            © {new Date().getFullYear()} Yew & Grain. All rights reserved.
+            © {new Date().getFullYear()} Yew & Grain. Rare English Yew timber, sustainably salvaged from the Lake District.
           </p>
         </div>
       </div>
