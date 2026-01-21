@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Mail } from "lucide-react";
+import { X, Mail, Loader2, CheckCircle } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 interface Product {
   id: string;
@@ -25,35 +26,47 @@ const InquiryModal = ({ isOpen, onClose, product }: InquiryModalProps) => {
     phone: "",
     message: "",
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Create mailto link with product details
-    const subject = encodeURIComponent(`Inquiry: ${product?.name}`);
-    const body = encodeURIComponent(
-      `Product Details:\n` +
-      `- Name: ${product?.name}\n` +
-      `- Category: ${product?.category}\n` +
-      `- Dimensions: ${product?.dimensions}\n` +
-      `- Grade: ${product?.grade}\n` +
-      `- Price: £${product?.price?.toLocaleString()}\n\n` +
-      `Customer Details:\n` +
-      `- Name: ${formData.name}\n` +
-      `- Email: ${formData.email}\n` +
-      `- Phone: ${formData.phone || 'Not provided'}\n\n` +
-      `Message:\n${formData.message}`
-    );
+    if (!product) return;
     
-    window.location.href = `mailto:hello@yewandgrain.co.uk?subject=${subject}&body=${body}`;
+    setIsSubmitting(true);
     
-    toast({
-      title: "Email client opened",
-      description: "Please send the email to complete your inquiry.",
-    });
-    
-    setFormData({ name: "", email: "", phone: "", message: "" });
-    onClose();
+    try {
+      // Build wood_item string with product details
+      const woodItemDetails = `${product.name} (${product.category}) - ${product.dimensions} - ${product.grade} Grade - £${product.price.toLocaleString()}`;
+      
+      const { error } = await supabase
+        .from('wood_inquiries')
+        .insert({
+          customer_name: formData.name.trim(),
+          customer_email: formData.email.trim(),
+          wood_item: woodItemDetails,
+          message: formData.message.trim() + (formData.phone ? `\n\nPhone: ${formData.phone}` : ''),
+        });
+      
+      if (error) throw error;
+      
+      toast({
+        title: "Inquiry sent!",
+        description: "We will contact you regarding the Lake District Yew shortly.",
+      });
+      
+      setFormData({ name: "", email: "", phone: "", message: "" });
+      onClose();
+    } catch (error) {
+      console.error('Error submitting inquiry:', error);
+      toast({
+        title: "Something went wrong",
+        description: "Please try again or contact us directly.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -88,6 +101,7 @@ const InquiryModal = ({ isOpen, onClose, product }: InquiryModalProps) => {
               <button
                 onClick={onClose}
                 className="p-2 hover:bg-secondary transition-colors duration-300"
+                disabled={isSubmitting}
               >
                 <X className="w-5 h-5 text-foreground" />
               </button>
@@ -121,11 +135,13 @@ const InquiryModal = ({ isOpen, onClose, product }: InquiryModalProps) => {
                   <input
                     type="text"
                     required
+                    maxLength={100}
                     value={formData.name}
                     onChange={(e) =>
                       setFormData({ ...formData, name: e.target.value })
                     }
-                    className="w-full px-4 py-3 bg-background border border-border focus:border-primary focus:outline-none transition-colors duration-300 text-foreground"
+                    disabled={isSubmitting}
+                    className="w-full px-4 py-3 bg-background border border-border focus:border-primary focus:outline-none transition-colors duration-300 text-foreground disabled:opacity-50"
                   />
                 </div>
                 <div>
@@ -135,11 +151,13 @@ const InquiryModal = ({ isOpen, onClose, product }: InquiryModalProps) => {
                   <input
                     type="email"
                     required
+                    maxLength={255}
                     value={formData.email}
                     onChange={(e) =>
                       setFormData({ ...formData, email: e.target.value })
                     }
-                    className="w-full px-4 py-3 bg-background border border-border focus:border-primary focus:outline-none transition-colors duration-300 text-foreground"
+                    disabled={isSubmitting}
+                    className="w-full px-4 py-3 bg-background border border-border focus:border-primary focus:outline-none transition-colors duration-300 text-foreground disabled:opacity-50"
                   />
                 </div>
               </div>
@@ -150,11 +168,13 @@ const InquiryModal = ({ isOpen, onClose, product }: InquiryModalProps) => {
                 </label>
                 <input
                   type="tel"
+                  maxLength={20}
                   value={formData.phone}
                   onChange={(e) =>
                     setFormData({ ...formData, phone: e.target.value })
                   }
-                  className="w-full px-4 py-3 bg-background border border-border focus:border-primary focus:outline-none transition-colors duration-300 text-foreground"
+                  disabled={isSubmitting}
+                  className="w-full px-4 py-3 bg-background border border-border focus:border-primary focus:outline-none transition-colors duration-300 text-foreground disabled:opacity-50"
                 />
               </div>
 
@@ -165,25 +185,37 @@ const InquiryModal = ({ isOpen, onClose, product }: InquiryModalProps) => {
                 <textarea
                   required
                   rows={4}
+                  maxLength={2000}
                   value={formData.message}
                   onChange={(e) =>
                     setFormData({ ...formData, message: e.target.value })
                   }
-                  className="w-full px-4 py-3 bg-background border border-border focus:border-primary focus:outline-none transition-colors duration-300 resize-none text-foreground"
+                  disabled={isSubmitting}
+                  className="w-full px-4 py-3 bg-background border border-border focus:border-primary focus:outline-none transition-colors duration-300 resize-none text-foreground disabled:opacity-50"
                   placeholder="Tell us about your project or ask any questions about this piece..."
                 />
               </div>
 
               <button
                 type="submit"
-                className="w-full label-uppercase py-4 bg-primary text-primary-foreground hover:bg-amber-dark transition-colors duration-300 flex items-center justify-center gap-2"
+                disabled={isSubmitting}
+                className="w-full label-uppercase py-4 bg-primary text-primary-foreground hover:bg-amber-dark transition-colors duration-300 flex items-center justify-center gap-2 disabled:opacity-70"
               >
-                <Mail className="w-4 h-4" />
-                Send Inquiry
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Sending...
+                  </>
+                ) : (
+                  <>
+                    <Mail className="w-4 h-4" />
+                    Send Inquiry
+                  </>
+                )}
               </button>
 
               <p className="text-xs text-muted-foreground text-center">
-                This will open your email client with the inquiry details pre-filled.
+                Your inquiry will be sent directly to our team.
               </p>
             </form>
           </motion.div>
