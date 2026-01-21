@@ -3,12 +3,12 @@ import heroImage from "@/assets/hero-wood.jpg";
 
 const Hero = () => {
   return (
-    <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
+    <section className="relative min-h-screen flex items-center justify-center overflow-hidden" aria-label="Hero">
       {/* Background Image */}
       <div className="absolute inset-0">
         <img
           src={heroImage}
-          alt="English Yew wood grain"
+          alt="Close-up of rare English Yew wood grain showing deep amber tones and intricate natural patterns"
           className="w-full h-full object-cover"
         />
         <div className="absolute inset-0 bg-gradient-to-b from-charcoal/70 via-charcoal/50 to-charcoal/80" />
@@ -43,7 +43,7 @@ const Hero = () => {
             transition={{ duration: 0.8, delay: 0.8 }}
             className="body-refined text-lg md:text-xl text-cream/80 max-w-2xl mx-auto mb-12"
           >
-            Sustainably salvaged and precision seasoned. Each piece tells a
+            Sustainably salvaged from the Lake District, Cumbria. Each piece tells a
             story centuries in the making.
           </motion.p>
 
