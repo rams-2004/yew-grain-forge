@@ -6,6 +6,7 @@ import TechnicalSpecs from "@/components/TechnicalSpecs";
 import SafetyWarning from "@/components/SafetyWarning";
 import Contact from "@/components/Contact";
 import Footer from "@/components/Footer";
+import ChatWidget from "@/components/ChatWidget";
 
 const Index = () => {
   return (
@@ -20,6 +21,7 @@ const Index = () => {
         <SafetyWarning />
       </main>
       <Footer />
+      <ChatWidget />
     </div>
   );
 };
