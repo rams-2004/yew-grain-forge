@@ -16,7 +16,7 @@ const Heritage = () => {
     value: "~180 Years"
   }, {
     label: "Origin",
-    value: "Cotswolds Estate"
+    value: "The Lake District"
   }];
   return <section id="heritage" className="py-32 bg-background">
       <div className="container mx-auto px-6">
@@ -58,17 +58,22 @@ const Heritage = () => {
             </h2>
 
             <div className="body-refined text-muted-foreground space-y-6 mb-12">
-              <p>This exceptional English Yew stood for nearly two centuries on a private Lake District estate, weathering storms and witnessing history unfold beneath its ancient boughs.</p>
+              <p>
+                This exceptional English Yew stood for nearly two centuries in the heart of 
+                <span className="text-primary font-medium"> The Lake District, Cumbria</span>—shaped 
+                by the region's unique growing conditions, its dramatic rainfall, and the mineral-rich 
+                Cumbrian soil that produces timber of unparalleled character.
+              </p>
               <p>
                 When the tree reached the end of its natural life in January
-                2026, we were entrusted with its careful salvage—ensuring that
+                2026, we were entrusted with its careful salvage from the Lakes—ensuring that
                 its remarkable wood would continue to serve craftspeople for
                 generations to come.
               </p>
               <p>
-                Each slab has been precision-milled and is now undergoing our
-                signature slow-seasoning process, preserving the deep amber
-                tones and intricate grain patterns that make English Yew one of
+                Each slab has been precision-milled at our Lake District workshop and is now 
+                undergoing our signature slow-seasoning process, preserving the deep amber
+                tones and intricate grain patterns that make Cumbrian Yew one of
                 the most coveted timbers in the world.
               </p>
             </div>
