@@ -23,14 +23,17 @@ const QuickInquiryButton = ({ product }: QuickInquiryButtonProps) => {
     setIsSubmitting(true);
 
     try {
-      const { error } = await supabase.from("wood_inquiries").insert({
-        customer_name: formData.name.trim(),
-        customer_email: formData.email.trim(),
-        wood_item: product?.name || "General Inquiry",
-        message: formData.message.trim(),
+      const { data, error } = await supabase.functions.invoke("send-inquiry", {
+        body: {
+          customer_name: formData.name.trim(),
+          customer_email: formData.email.trim(),
+          wood_item: product?.name || "General Inquiry",
+          message: formData.message.trim(),
+        },
       });
 
       if (error) throw error;
+      if (!data?.success) throw new Error(data?.error || "Failed to send inquiry");
 
       toast({
         title: "Inquiry sent!",
