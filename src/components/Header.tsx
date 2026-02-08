@@ -18,6 +18,8 @@ const Header = () => {
     { name: "Contact", href: "#contact" },
   ];
 
+  const PHONE = "+44 7852 862296";
+
   return (
     <motion.header
       initial={{ y: -100 }}
@@ -38,7 +40,7 @@ const Header = () => {
           </span>
         </a>
 
-        <div className="hidden md:flex items-center gap-10">
+        <div className="hidden lg:flex items-center gap-10">
           {navLinks.map((link) => (
             <a
               key={link.name}
@@ -48,14 +50,20 @@ const Header = () => {
               {link.name}
             </a>
           ))}
+          <a
+            href={`tel:${PHONE}`}
+            className="label-uppercase px-4 py-2 bg-primary text-primary-foreground hover:bg-amber-dark transition-colors duration-300 text-sm font-semibold"
+          >
+            Call: {PHONE}
+          </a>
         </div>
 
-        {/* Mobile: Contact link only */}
+        {/* Mobile: Call button only */}
         <a
-          href="#contact"
-          className="md:hidden label-uppercase text-sm text-primary hover:text-foreground transition-colors duration-300"
+          href={`tel:${PHONE}`}
+          className="lg:hidden label-uppercase text-sm text-primary hover:text-foreground transition-colors duration-300 font-semibold"
         >
-          Contact
+          Call
         </a>
       </nav>
     </motion.header>

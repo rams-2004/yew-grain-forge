@@ -3,10 +3,9 @@ import Hero from "@/components/Hero";
 import Heritage from "@/components/Heritage";
 import Inventory from "@/components/Inventory";
 import TechnicalSpecs from "@/components/TechnicalSpecs";
-import SafetyWarning from "@/components/SafetyWarning";
 import Contact from "@/components/Contact";
 import Footer from "@/components/Footer";
-import ChatWidget from "@/components/ChatWidget";
+import QuickInquiryButton from "@/components/QuickInquiryButton";
 
 const Index = () => {
   return (
@@ -18,10 +17,9 @@ const Index = () => {
         <Inventory />
         <Contact />
         <TechnicalSpecs />
-        <SafetyWarning />
       </main>
       <Footer />
-      <ChatWidget />
+      <QuickInquiryButton />
     </div>
   );
 };
