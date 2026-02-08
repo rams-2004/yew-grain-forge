@@ -8,11 +8,84 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
+// Simple email validation regex
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+// Input validation constants
+const MAX_NAME_LENGTH = 100;
+const MAX_EMAIL_LENGTH = 255;
+const MAX_WOOD_ITEM_LENGTH = 200;
+const MAX_MESSAGE_LENGTH = 2000;
+
 interface InquiryRequest {
   customer_name: string;
   customer_email: string;
   wood_item: string;
   message: string;
+}
+
+// Sanitize text to prevent XSS in emails
+function sanitizeText(text: string): string {
+  return text
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#x27;");
+}
+
+// Validate and sanitize input
+function validateInput(data: unknown): { valid: true; data: InquiryRequest } | { valid: false; error: string } {
+  if (!data || typeof data !== "object") {
+    return { valid: false, error: "Invalid request format" };
+  }
+
+  const { customer_name, customer_email, wood_item, message } = data as Record<string, unknown>;
+
+  // Validate customer_name
+  if (typeof customer_name !== "string" || customer_name.trim().length === 0) {
+    return { valid: false, error: "Name is required" };
+  }
+  if (customer_name.length > MAX_NAME_LENGTH) {
+    return { valid: false, error: `Name must be less than ${MAX_NAME_LENGTH} characters` };
+  }
+
+  // Validate customer_email
+  if (typeof customer_email !== "string" || customer_email.trim().length === 0) {
+    return { valid: false, error: "Email is required" };
+  }
+  if (customer_email.length > MAX_EMAIL_LENGTH) {
+    return { valid: false, error: `Email must be less than ${MAX_EMAIL_LENGTH} characters` };
+  }
+  if (!EMAIL_REGEX.test(customer_email.trim())) {
+    return { valid: false, error: "Invalid email format" };
+  }
+
+  // Validate wood_item
+  if (typeof wood_item !== "string" || wood_item.trim().length === 0) {
+    return { valid: false, error: "Wood item is required" };
+  }
+  if (wood_item.length > MAX_WOOD_ITEM_LENGTH) {
+    return { valid: false, error: `Wood item must be less than ${MAX_WOOD_ITEM_LENGTH} characters` };
+  }
+
+  // Validate message
+  if (typeof message !== "string" || message.trim().length === 0) {
+    return { valid: false, error: "Message is required" };
+  }
+  if (message.length > MAX_MESSAGE_LENGTH) {
+    return { valid: false, error: `Message must be less than ${MAX_MESSAGE_LENGTH} characters` };
+  }
+
+  return {
+    valid: true,
+    data: {
+      customer_name: customer_name.trim(),
+      customer_email: customer_email.trim().toLowerCase(),
+      wood_item: wood_item.trim(),
+      message: message.trim(),
+    },
+  };
 }
 
 serve(async (req: Request): Promise<Response> => {
@@ -24,47 +97,78 @@ serve(async (req: Request): Promise<Response> => {
   try {
     const resendApiKey = Deno.env.get("RESEND_API_KEY");
     if (!resendApiKey) {
-      throw new Error("RESEND_API_KEY is not configured");
+      console.error("RESEND_API_KEY is not configured");
+      return new Response(
+        JSON.stringify({ success: false, error: "Email service is currently unavailable" }),
+        { status: 503, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
     }
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL");
     const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY");
     if (!supabaseUrl || !supabaseAnonKey) {
-      throw new Error("Supabase environment variables not configured");
+      console.error("Supabase environment variables not configured");
+      return new Response(
+        JSON.stringify({ success: false, error: "Service is currently unavailable" }),
+        { status: 503, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
     }
+
+    // Parse and validate input
+    let rawData: unknown;
+    try {
+      rawData = await req.json();
+    } catch {
+      return new Response(
+        JSON.stringify({ success: false, error: "Invalid request format" }),
+        { status: 400, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
+    }
+
+    const validation = validateInput(rawData);
+    if (!validation.valid) {
+      return new Response(
+        JSON.stringify({ success: false, error: validation.error }),
+        { status: 400, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
+    }
+
+    const { customer_name, customer_email, wood_item, message } = validation.data;
+
+    console.log(`Processing inquiry from ${customer_name} for: ${wood_item}`);
 
     const resend = new Resend(resendApiKey);
     const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
-    const { customer_name, customer_email, wood_item, message }: InquiryRequest = await req.json();
-
-    // Validate required fields
-    if (!customer_name || !customer_email || !wood_item || !message) {
-      throw new Error("Missing required fields: customer_name, customer_email, wood_item, message");
-    }
-
-    console.log(`Processing inquiry from ${customer_name} (${customer_email}) for: ${wood_item}`);
-
     // Insert inquiry into database
     const { error: dbError } = await supabase.from("wood_inquiries").insert({
-      customer_name: customer_name.trim(),
-      customer_email: customer_email.trim(),
-      wood_item: wood_item.trim(),
-      message: message.trim(),
+      customer_name,
+      customer_email,
+      wood_item,
+      message,
     });
 
     if (dbError) {
       console.error("Database insert error:", dbError);
-      throw new Error(`Failed to save inquiry: ${dbError.message}`);
+      return new Response(
+        JSON.stringify({ success: false, error: "Unable to process inquiry. Please try again." }),
+        { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
     }
 
     console.log("Inquiry saved to database successfully");
+
+    // Sanitize user input for HTML email
+    const safeName = sanitizeText(customer_name);
+    const safeEmail = sanitizeText(customer_email);
+    const safeWoodItem = sanitizeText(wood_item);
+    const safeMessage = sanitizeText(message);
 
     // Send notification email to business owner
     const notificationEmail = await resend.emails.send({
       from: "Yew & Grain Inquiries <onboarding@resend.dev>",
       to: ["yewNgrain@outlook.com"],
-      subject: `🌳 New Inquiry: ${wood_item}`,
+      subject: `🌳 New Inquiry: ${safeWoodItem}`,
       html: `
         <!DOCTYPE html>
         <html>
@@ -92,21 +196,21 @@ serve(async (req: Request): Promise<Response> => {
             <div class="content">
               <div class="field">
                 <div class="label">Customer Name</div>
-                <div class="value">${customer_name}</div>
+                <div class="value">${safeName}</div>
               </div>
               <div class="field">
                 <div class="label">Email</div>
-                <div class="value"><a href="mailto:${customer_email}">${customer_email}</a></div>
+                <div class="value"><a href="mailto:${safeEmail}">${safeEmail}</a></div>
               </div>
               <div class="field">
                 <div class="label">Inquiry About</div>
-                <div class="value">${wood_item}</div>
+                <div class="value">${safeWoodItem}</div>
               </div>
               <div class="message-box">
                 <div class="label">Message</div>
-                <div class="value">${message.replace(/\n/g, "<br>")}</div>
+                <div class="value">${safeMessage.replace(/\n/g, "<br>")}</div>
               </div>
-              <a href="mailto:${customer_email}?subject=Re: Your Yew %26 Grain Inquiry" class="cta">Reply to Customer</a>
+              <a href="mailto:${safeEmail}?subject=Re: Your Yew %26 Grain Inquiry" class="cta">Reply to Customer</a>
             </div>
             <div class="footer">
               <p>This notification was sent from your Yew & Grain website.</p>
@@ -123,8 +227,7 @@ serve(async (req: Request): Promise<Response> => {
     return new Response(
       JSON.stringify({ 
         success: true, 
-        message: "Inquiry submitted and notification sent",
-        emailId: notificationEmail.data?.id 
+        message: "Inquiry submitted successfully"
       }),
       {
         status: 200,
@@ -133,9 +236,8 @@ serve(async (req: Request): Promise<Response> => {
     );
   } catch (error: unknown) {
     console.error("Error processing inquiry:", error);
-    const errorMessage = error instanceof Error ? error.message : "Unknown error";
     return new Response(
-      JSON.stringify({ success: false, error: errorMessage }),
+      JSON.stringify({ success: false, error: "Unable to process inquiry. Please try again." }),
       {
         status: 500,
         headers: { "Content-Type": "application/json", ...corsHeaders },
