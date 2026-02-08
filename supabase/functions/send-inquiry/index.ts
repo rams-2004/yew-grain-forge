@@ -63,7 +63,7 @@ serve(async (req: Request): Promise<Response> => {
     // Send notification email to business owner
     const notificationEmail = await resend.emails.send({
       from: "Yew & Grain Inquiries <onboarding@resend.dev>",
-      to: ["ramsenequity@gmail.com"],
+      to: ["yewNgrain@outlook.com"],
       subject: `🌳 New Inquiry: ${wood_item}`,
       html: `
         <!DOCTYPE html>
