@@ -123,6 +123,8 @@
   body {
     @apply bg-background text-foreground antialiased;
     font-family: var(--font-sans);
+    font-size: 18px;
+    line-height: 1.6;
   }
 
   h1, h2, h3, h4, h5, h6 {
@@ -158,9 +160,18 @@
 
   .label-uppercase {
     font-family: var(--font-sans);
-    font-weight: 500;
-    font-size: 0.75rem;
+    font-weight: 600;
+    font-size: 0.8rem;
     letter-spacing: 0.15em;
     text-transform: uppercase;
+  }
+
+  /* Accessibility improvements for middle-aged users */
+  button {
+    @apply min-h-[44px] min-w-[44px];
+  }
+
+  input, textarea, select {
+    @apply min-h-[44px];
   }
 }

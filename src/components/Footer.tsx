@@ -1,4 +1,6 @@
 const Footer = () => {
+  const PHONE = "+44 7852 862296";
+  
   return (
     <footer className="py-12 bg-charcoal border-t border-border/20">
       <div className="container mx-auto px-6">
@@ -10,6 +12,12 @@ const Footer = () => {
             <p className="body-refined text-sm text-cream/50 mt-2">
               Premium English Yew from the Lake District, Cumbria
             </p>
+            <a
+              href={`tel:${PHONE}`}
+              className="label-uppercase text-xs text-cream/80 hover:text-cream transition-colors duration-300 inline-block mt-3"
+            >
+              📞 {PHONE}
+            </a>
           </div>
           
           <nav aria-label="Footer navigation" className="flex items-center gap-8">

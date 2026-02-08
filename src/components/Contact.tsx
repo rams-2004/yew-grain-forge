@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 const Contact = () => {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: "-100px" });
+  const PHONE = "+44 7852 862296";
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -66,10 +67,21 @@ const Contact = () => {
             <h2 className="heading-display text-4xl md:text-5xl text-foreground mb-6">
               Wholesale Inquiries
             </h2>
-            <p className="body-refined text-muted-foreground">
+            <p className="body-refined text-muted-foreground mb-6">
               For bulk orders, custom milling, or trade partnerships, please
               complete the form below.
             </p>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-8">
+              <div className="inline-block bg-primary/10 text-primary px-4 py-2 rounded-sm">
+                <span className="label-uppercase text-xs font-semibold">✓ 24-hour Response Guarantee</span>
+              </div>
+              <a
+                href={`tel:${PHONE}`}
+                className="inline-flex items-center gap-2 text-primary hover:text-amber-dark transition-colors font-semibold"
+              >
+                📞 {PHONE}
+              </a>
+            </div>
           </motion.div>
 
           <motion.form

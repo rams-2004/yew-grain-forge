@@ -84,17 +84,17 @@ const ProductCard = ({ product, onInquire }: ProductCardProps) => {
           >
             {product.dimensions}
           </motion.span>
-          <motion.button
+           <motion.button
             initial={{ y: 20, opacity: 0 }}
             animate={isHovered ? { y: 0, opacity: 1 } : { y: 20, opacity: 0 }}
             transition={{ duration: 0.3, delay: 0.2 }}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.98 }}
+            whileHover={{ scale: 1.08 }}
+            whileTap={{ scale: 0.96 }}
             onClick={() => onInquire(product)}
-            className="label-uppercase px-6 py-3 bg-primary text-primary-foreground hover:bg-amber-dark transition-colors duration-300 flex items-center gap-2"
+            className="label-uppercase px-8 py-4 bg-primary text-primary-foreground hover:bg-amber-dark transition-colors duration-300 flex items-center gap-2 font-bold text-base min-h-[48px]"
           >
-            <Mail className="w-4 h-4" />
-            Inquire via Email
+            <Mail className="w-5 h-5" />
+            Inquire Now
           </motion.button>
         </motion.div>
       </div>
