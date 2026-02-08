@@ -22,16 +22,17 @@ const Contact = () => {
     setIsSubmitting(true);
     
     try {
-      const { error } = await supabase
-        .from('wood_inquiries')
-        .insert({
+      const { data, error } = await supabase.functions.invoke("send-inquiry", {
+        body: {
           customer_name: formData.name.trim(),
           customer_email: formData.email.trim(),
           wood_item: 'Wholesale Inquiry' + (formData.company ? ` - ${formData.company}` : ''),
           message: formData.message.trim(),
-        });
+        },
+      });
       
       if (error) throw error;
+      if (!data?.success) throw new Error(data?.error || "Failed to send inquiry");
       
       toast({
         title: "Inquiry sent!",
@@ -43,7 +44,7 @@ const Contact = () => {
       console.error('Error submitting inquiry:', error);
       toast({
         title: "Something went wrong",
-        description: "Please try again or contact us directly.",
+        description: "Please try again or contact us directly at +44 7852 862296.",
         variant: "destructive",
       });
     } finally {
